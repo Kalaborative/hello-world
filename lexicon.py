@@ -1,7 +1,10 @@
+# First we establish lists that include our words,
 direction = ['north', 'south', 'east', 'west', 'down', 'up', 'left', 'right', 'back']
-verb = ['go', 'stop', 'kill', 'eat']
+verb = ['go', 'stop', 'kill', 'eat', 'jump']
 stop = ['the', 'in', 'of', 'from', 'at', 'it']
-noun = ['door', 'bear', 'princess', 'cabinet']
+noun = ['door', 'bear', 'princess', 'window']
+
+# Empty list here
 my_list = []
 
 def scan(string):
