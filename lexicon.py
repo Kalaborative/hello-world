@@ -7,10 +7,11 @@ noun = ['door', 'bear', 'princess', 'window']
 # Empty list here
 my_list = []
 
+# design a scan function to classify words in a string into parts of speech.
 def scan(string):
 		wordify = str(string)
 		phrase = wordify.split()
-		del my_list[:]
+		del my_list[:] # clear the list before appending words to it
 		for word in phrase:
 			if word in direction:
 				 my_list.append(('direction', word))
@@ -24,10 +25,10 @@ def scan(string):
 				is_a_number(word)
 		return my_list
 
-
+# if the string contains numbers, classify it into the number category
 def is_a_number(s):
 		try:
 			number = int(s)
 			my_list.append(('number', number))
-		except ValueError:
+		except ValueError: # Anything that isn't in the list or not a number displays "error"
 			my_list.append(('error', s))		
