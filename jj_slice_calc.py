@@ -1,18 +1,24 @@
+# Well... let's begin. *cracks knuckles*
+# import our necessary modules
 from datetime import date, datetime, timedelta
 from random import randint
 from sys import exit
 
 
-
+# define our global variables
+# In this case, we set these to what we believed would be
+# completely full slicing levels, by pack.
 fullturkey = 18
 fullham = 21
 fullvito = 11
 fullbeef = 12
 fullcheese = 18
 
+# A list of terms the calculator will accept
 terms = ['vito', 'cheese', 'beef', 'turkey', 'ham']
 
-
+# Depending on the weekday, different slicing levels are observed.
+# This is why this function is necessary.
 def day_of_week(food):
   day = date.today().strftime("%A")
   if (day == 'Friday' or day == 'Saturday') and food == 'turkey':
@@ -46,12 +52,14 @@ def day_of_week(food):
   elif food == 'cheese':
     print "Today is %s which means you need to slice 3 rows." % day
 
+
+# This be the big function.
 def slice_calc(food, amt):
   if food == "ham":
     day_of_week(food)
-    leftover = fullham - float(amt)
-    result = int(round(leftover / 3))
-    is_positive(result)
+    leftover = fullham - float(amt) # Why float? Because we're rounding numbers.
+    result = int(round(leftover / 3)) # Rounding an integer would be kinda pointless.
+    is_positive(result)               # Wouldn't it?
     print "You need to slice %d hams." % result
     time_to_slice(result, food)
   elif food == "turkey":
@@ -83,15 +91,18 @@ def slice_calc(food, amt):
     print "You need to slice %d logs of cheese." % result
     time_to_slice(result, food)
 
+# This function approximates the time it takes to slice a meat.
+# Note that this means NO DISTRACTIONS WHATSOEVER!
 def time_to_slice(num_packs, food):
   #num_packs = int(num_packs)
   if food == 'turkey':
     num_packs *= 6
     print "It would take about %d minutes to slice %s." % (num_packs, food)
-    adj_packs = adjusted_time(num_packs)
+    adj_packs = adjusted_time(num_packs) # Shit happens. That's why we need an ADJUSTED time.
     int_packs = int(adj_packs)
-    overhour_filter(int_packs)
-    is_a_lot(int_packs)
+    overhour_filter(int_packs) # I'll explain this later.
+    is_a_lot(int_packs) # This too.
+    keep_running()
   elif food == 'ham':
     num_packs *= 12
     print "It would take about %d minutes to slice %s." % (num_packs, food)
@@ -99,6 +110,7 @@ def time_to_slice(num_packs, food):
     int_packs = int(adj_packs)
     overhour_filter(int_packs)
     is_a_lot(int_packs)
+    keep_running()
   elif food == 'vito':
     num_packs *= 15
     print "It would take about %d minutes to slice %s." % (num_packs, food)
@@ -106,6 +118,7 @@ def time_to_slice(num_packs, food):
     int_packs = int(adj_packs)
     overhour_filter(int_packs)
     is_a_lot(int_packs)
+    keep_running()
   elif food == 'beef':
     num_packs *= 16
     print "It would take about %d minutes to slice %s." % (num_packs, food)
@@ -113,6 +126,7 @@ def time_to_slice(num_packs, food):
     int_packs = int(adj_packs)
     overhour_filter(int_packs)
     is_a_lot(int_packs)
+    keep_running()
   elif food == 'cheese':
     num_packs *= 24
     print "It would take about %d minutes to slice %s." % (num_packs, food)
@@ -120,7 +134,14 @@ def time_to_slice(num_packs, food):
     int_packs = int(adj_packs)
     overhour_filter(int_packs)
     is_a_lot(int_packs)
+    keep_running()
 
+
+
+# So the concept of this is given any duration of time, in minutes,
+# how likely would it be for an order to just pop in once or twice.
+# This would be EXTREMELY difficult to do, so I simply guestimated
+# by applying a small but random amount of minutes to our time.
 def adjusted_time(ntime):
   if ntime < 10:
     ntime = ntime + randint(1, 4)
@@ -140,24 +161,33 @@ def adjusted_time(ntime):
   elif ntime >=120 and ntime <= 150:
     ntime = ntime + randint(30, 50)
 
+
+
+# A completely fake but showoff-y loading simulator.
 def factor_load():
-  print "Factoring in possible orders..."
-  factor = "3..."
+  print "Establishing a connection with the server..."
+  i = 0
+  while i < 9000000:
+    i += 1
+  factor = "Plotting previous sales data..."
   print factor
   i = 0
-  while i < 4000000:
+  while i < 9900000:
     i += 1
-  factor = "2..."
+  factor = "Measuring average statistics..."
   print factor
-  while i < 80000000:
+  i = 0
+  while i < 7500000:
     i += 1
-  factor = "1..."
+  factor = "Running algorithms to predict projections..."
   print factor
-  while i < 140000000:
+  i = 0
+  while i < 9300000:
     i += 1
   factor = "Done"
   print factor
 
+# How much is "a lot"? Well wouldn't you like to know!
 def is_a_lot(n):
   if n < 35:
     print "Lucky for you, %s, there's not a lot you have to do. Whoopee!" % q3
@@ -170,6 +200,10 @@ def is_a_lot(n):
   elif n >= 110:
     print "You have a LOT of slicing to do, %s! I'd get movin'!" % q3
 
+
+# So unfortunately the way the timedelta object works, it maxes out at 59 minutes.
+# So for every adjusted time over that, I have to dissect it into hours and minutes.
+# Fortunately, that wasn't very hard to figure out.
 def overhour_filter(n):
   now = datetime.now()
   #n = int(n)
@@ -186,20 +220,41 @@ def overhour_filter(n):
     factor_load()
     print "You should be done by about %s." % end_time
 
+
+# This basically prevents the program from saying something like..
+# "you need to slice -4 turkeys."
+# In other words, it's already full dipshit.
 def is_positive(n):
   if n < 0:
     print "You have enough! Don't slice anymore."
     exit()
 
-while True:
-  q3 = raw_input("Type in your name: ")
-  q1 = raw_input("What are you slicing? ")
-  q2 = raw_input("How many packs of %s do you have? " % q1)
 
-  if q1 in terms:
-    break
+# I had to invent this so that file wouldn't just
+# immediately close once it reached the end of the file.
+def keep_running():
+  run = raw_input("Would you like to continue? Enter y or n: ")
+  if run == 'y' or run == 'Y':
+    slicing_helper()
+  elif run == 'n' or run == 'N':
+    byebye = raw_input("Thanks for using my program! \nHit Enter to close.")
+    exit()
   else:
-    print "Sorry that food item does not exist! Try again."
+    print "Type y or n."
+    keep_running()
 
-slice_calc(q1, q2)
+# The main function that makes it run infinitely unless told otherwise.
+def slicing_helper():
+  while True:
+    q1 = raw_input("What are you slicing? ")
+    q2 = raw_input("How many packs of %s do you have? " % q1)
 
+    if q1 in terms:
+      slice_calc(q1, q2)
+    else:
+      print "Sorry that food item does not exist! Try again."
+
+# We like to you by name, i guess.
+q3 = raw_input("Type in your name: ")
+# That's it. k bye.
+slicing_helper()
