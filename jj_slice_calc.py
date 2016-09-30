@@ -3,6 +3,10 @@
 from datetime import date, datetime, timedelta
 from random import randint
 from sys import exit
+import sqlite3
+
+# NOTE: MAKE SURE TO RUN sqlite3_db_profiles.py BEFORE RUNNING THIS CODE
+# OTHERWISE THE PROFILE FEATURE WILL NOT WORK ! ! !
 
 
 # define our global variables
@@ -15,10 +19,12 @@ fullbeef = 12
 fullcheese = 18
 
 # A list of terms the calculator will accept
-terms = ['vito', 'cheese', 'beef', 'turkey', 'ham']
+# This also describes the specific order in which to insert the values.
+terms = ['turkey', 'ham', 'cheese', 'vito', 'beef']
 
-profiles = ['Drew']
-slicetime = {}
+profiles = []
+sliceload = []
+slicetime = []
 
 # Depending on the weekday, different slicing levels are observed.
 # This is why this function is necessary.
@@ -99,7 +105,7 @@ def slice_calc(food, amt):
 def time_to_slice(num_packs, food):
   #num_packs = int(num_packs)
   if food == 'turkey' and q3 == "Drew":
-    num_packs *= 3.97
+    num_packs *= slicetime[0][0]
     print "It would take about %d minutes to slice %s." % (num_packs, food)
     adj_packs = adjusted_time(num_packs) # Shit happens. That's why we need an ADJUSTED time.
     int_packs = int(adj_packs)
@@ -122,6 +128,22 @@ def time_to_slice(num_packs, food):
     overhour_filter(int_packs)
     is_a_lot(int_packs)
     keep_running()
+  elif food == 'cheese' and q3 == "Drew":
+    num_packs *= 18
+    print "It would take about %d minutes to slice %s." % (num_packs, food)
+    adj_packs = adjusted_time(num_packs)
+    int_packs = int(adj_packs)
+    overhour_filter(int_packs)
+    is_a_lot(int_packs)
+    keep_running()
+  elif food == 'cheese':
+    num_packs *= 24
+    print "It would take about %d minutes to slice %s." % (num_packs, food)
+    adj_packs = adjusted_time(num_packs)
+    int_packs = int(adj_packs)
+    overhour_filter(int_packs)
+    is_a_lot(int_packs)
+    keep_running()
   elif food == 'vito':
     num_packs *= 15
     print "It would take about %d minutes to slice %s." % (num_packs, food)
@@ -138,22 +160,7 @@ def time_to_slice(num_packs, food):
     overhour_filter(int_packs)
     is_a_lot(int_packs)
     keep_running()
-  elif food == 'cheese' and q3 == "Drew":
-    num_packs *= 18
-    print "It would take about %d minutes to slice %s." % (num_packs, food)
-    adj_packs = adjusted_time(num_packs)
-    int_packs = int(adj_packs)
-    overhour_filter(int_packs)
-    is_a_lot(int_packs)
-    keep_running()
-   elif food == 'cheese':
-    num_packs *= 24
-    print "It would take about %d minutes to slice %s." % (num_packs, food)
-    adj_packs = adjusted_time(num_packs)
-    int_packs = int(adj_packs)
-    overhour_filter(int_packs)
-    is_a_lot(int_packs)
-    keep_running()
+
 
 
 
@@ -264,22 +271,43 @@ def keep_running():
   else:
     print "Type y or n."
     keep_running()
+ 
+
 
 def profile_loader(name):
+  sliceload.append(name)
   print "On average, how many minutes does it take to slice 1 turkey?"
-  slicetime['tur'] = raw_input("> ")
+  print "If you don't know, please type 'null'."
+  tur = raw_input("> ")
+  sliceload.append(tur)
   print "Ham?"
-  slicetime['ham'] = raw_input("> ")
+  ham = raw_input("> ")
+  sliceload.append(ham)
   print "Cheese?"
-  slicetime['chz'] = raw_input("> ")
-  print "Beef?"
-  slicetime['bf'] = raw_input("> ")
+  chz = raw_input("> ")
+  sliceload.append(chz)
   print "And vito?"
-  slicetime['vit'] = raw_input("> ")
+  vit = raw_input("> ")
+  sliceload.append(vit)
+  print "Beef?"
+  bf = raw_input("> ")
+  sliceload.append(bf)
   
-  profiles.append(name)
+  with sqlite3.connect("jj_slicing.db") as connection:
+    c = connection.cursor()
+    
+    c.execute("INSERT INTO Profiles VALUES(?, ?, ?, ?, ?, ?)", sliceload)
   
-
+def slice_dump(person):
+  prof = []
+  prof.append(person)
+  with sqlite3.connect("jj_slicing.db") as connection:
+    c = connection.cursor()
+    c.execute("SELECT turk,ham,cheese,vito,beef FROM Profiles WHERE Name=?", prof)
+    slicedump = c.fetchall()
+    for s in slicedump:
+      slicetime.append(s)
+  
 # The main function that makes it run infinitely unless told otherwise.
 def slicing_helper():
   while True:
@@ -293,12 +321,22 @@ def slicing_helper():
 
 # We like to you by name, i guess.
 q3 = raw_input("Type in your name: ")
+with sqlite3.connect("jj_slicing.db") as connection:
+  c = connection.cursor()
+  
+  c.execute("SELECT * FROM Profiles")
+  rows = c.fetchall()
+  
+  for r in rows:
+     profiles.append(r[0])
+
 if q3 in profiles:
+  slice_dump(q3)
   print "%s has a profile! Profile loaded." % q3
 else:
   print "You don't have a profile. Would you like to make one now? Y/N"
   response = raw_input("> ")
-  if response == "y":
+  if response == "y" or response == "Y":
     profile_loader(q3)
   else:
     slicing_helper()
