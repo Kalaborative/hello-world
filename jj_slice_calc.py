@@ -17,6 +17,9 @@ fullcheese = 18
 # A list of terms the calculator will accept
 terms = ['vito', 'cheese', 'beef', 'turkey', 'ham']
 
+profiles = ['Drew']
+slicetime = {}
+
 # Depending on the weekday, different slicing levels are observed.
 # This is why this function is necessary.
 def day_of_week(food):
@@ -95,6 +98,14 @@ def slice_calc(food, amt):
 # Note that this means NO DISTRACTIONS WHATSOEVER!
 def time_to_slice(num_packs, food):
   #num_packs = int(num_packs)
+  if food == 'turkey' and q3 == "Drew":
+    num_packs *= 3.97
+    print "It would take about %d minutes to slice %s." % (num_packs, food)
+    adj_packs = adjusted_time(num_packs) # Shit happens. That's why we need an ADJUSTED time.
+    int_packs = int(adj_packs)
+    overhour_filter(int_packs) # I'll explain this later.
+    is_a_lot(int_packs) # This too.
+    keep_running()
   if food == 'turkey':
     num_packs *= 6
     print "It would take about %d minutes to slice %s." % (num_packs, food)
@@ -127,7 +138,15 @@ def time_to_slice(num_packs, food):
     overhour_filter(int_packs)
     is_a_lot(int_packs)
     keep_running()
-  elif food == 'cheese':
+  elif food == 'cheese' and q3 == "Drew":
+    num_packs *= 18
+    print "It would take about %d minutes to slice %s." % (num_packs, food)
+    adj_packs = adjusted_time(num_packs)
+    int_packs = int(adj_packs)
+    overhour_filter(int_packs)
+    is_a_lot(int_packs)
+    keep_running()
+   elif food == 'cheese':
     num_packs *= 24
     print "It would take about %d minutes to slice %s." % (num_packs, food)
     adj_packs = adjusted_time(num_packs)
@@ -158,8 +177,9 @@ def adjusted_time(ntime):
   elif ntime >= 91 and ntime < 120:
     ntime = ntime + randint(26, 44)
     return ntime
-  elif ntime >=120 and ntime <= 150:
+  else:
     ntime = ntime + randint(30, 50)
+    return ntime
 
 
 
@@ -215,6 +235,8 @@ def overhour_filter(n):
   elif n >= 59:
     min_v = n % 60
     hour_v = n / 60
+    if min_v == 0:
+      min_v = min_v + 1
     new_now = now + timedelta(minutes = min_v, hours = hour_v)
     end_time = new_now.strftime("%I:%M %p")
     factor_load()
@@ -243,12 +265,27 @@ def keep_running():
     print "Type y or n."
     keep_running()
 
+def profile_loader(name):
+  print "On average, how many minutes does it take to slice 1 turkey?"
+  slicetime['tur'] = raw_input("> ")
+  print "Ham?"
+  slicetime['ham'] = raw_input("> ")
+  print "Cheese?"
+  slicetime['chz'] = raw_input("> ")
+  print "Beef?"
+  slicetime['bf'] = raw_input("> ")
+  print "And vito?"
+  slicetime['vit'] = raw_input("> ")
+  
+  profiles.append(name)
+  
+
 # The main function that makes it run infinitely unless told otherwise.
 def slicing_helper():
   while True:
     q1 = raw_input("What are you slicing? ")
     q2 = raw_input("How many packs of %s do you have? " % q1)
-
+    
     if q1 in terms:
       slice_calc(q1, q2)
     else:
@@ -256,5 +293,14 @@ def slicing_helper():
 
 # We like to you by name, i guess.
 q3 = raw_input("Type in your name: ")
+if q3 in profiles:
+  print "%s has a profile! Profile loaded." % q3
+else:
+  print "You don't have a profile. Would you like to make one now? Y/N"
+  response = raw_input("> ")
+  if response == "y":
+    profile_loader(q3)
+  else:
+    slicing_helper()
 # That's it. k bye.
 slicing_helper()
