@@ -28,6 +28,8 @@ slicetime = []
 
 # Depending on the weekday, different slicing levels are observed.
 # This is why this function is necessary.
+
+
 def day_of_week(food):
   day = date.today().strftime("%A")
   if (day == 'Friday' or day == 'Saturday') and food == 'turkey':
@@ -66,8 +68,8 @@ def day_of_week(food):
 def slice_calc(food, amt):
   if food == "ham":
     day_of_week(food)
-    leftover = fullham - float(amt) # Why float? Because we're rounding numbers.
-    result = int(round(leftover / 3)) # Rounding an integer would be kinda pointless.
+    leftover = fullham - float(amt)  # Why float? Because we're rounding numbers.
+    result = int(round(leftover / 3))  # Rounding an integer would be kinda pointless.
     is_positive(result)               # Wouldn't it?
     print "You need to slice %d hams." % result
     time_to_slice(result, food)
@@ -102,23 +104,24 @@ def slice_calc(food, amt):
 
 # This function approximates the time it takes to slice a meat.
 # Note that this means NO DISTRACTIONS WHATSOEVER!
+
+
 def time_to_slice(num_packs, food):
-  #num_packs = int(num_packs)
   if food == 'turkey' and q3 == "Drew":
     num_packs *= slicetime[0][0]
     print "It would take about %d minutes to slice %s." % (num_packs, food)
-    adj_packs = adjusted_time(num_packs) # Shit happens. That's why we need an ADJUSTED time.
+    adj_packs = adjusted_time(num_packs)  # Shit happens. That's why we need an ADJUSTED time.
     int_packs = int(adj_packs)
-    overhour_filter(int_packs) # I'll explain this later.
-    is_a_lot(int_packs) # This too.
+    overhour_filter(int_packs)  # I'll explain this later.
+    is_a_lot(int_packs)  # This too.
     keep_running()
   if food == 'turkey':
     num_packs *= 6
     print "It would take about %d minutes to slice %s." % (num_packs, food)
-    adj_packs = adjusted_time(num_packs) # Shit happens. That's why we need an ADJUSTED time.
+    adj_packs = adjusted_time(num_packs)
     int_packs = int(adj_packs)
-    overhour_filter(int_packs) # I'll explain this later.
-    is_a_lot(int_packs) # This too.
+    overhour_filter(int_packs)
+    is_a_lot(int_packs)
     keep_running()
   elif food == 'ham':
     num_packs *= 12
@@ -162,8 +165,6 @@ def time_to_slice(num_packs, food):
     keep_running()
 
 
-
-
 # So the concept of this is given any duration of time, in minutes,
 # how likely would it be for an order to just pop in once or twice.
 # This would be EXTREMELY difficult to do, so I simply guestimated
@@ -187,7 +188,6 @@ def adjusted_time(ntime):
   else:
     ntime = ntime + randint(30, 50)
     return ntime
-
 
 
 # A completely fake but showoff-y loading simulator.
@@ -215,6 +215,8 @@ def factor_load():
   print factor
 
 # How much is "a lot"? Well wouldn't you like to know!
+
+
 def is_a_lot(n):
   if n < 35:
     print "Lucky for you, %s, there's not a lot you have to do. Whoopee!" % q3
@@ -233,9 +235,8 @@ def is_a_lot(n):
 # Fortunately, that wasn't very hard to figure out.
 def overhour_filter(n):
   now = datetime.now()
-  #n = int(n)
   if n < 59:
-    new_now = now + timedelta(minutes = n)
+    new_now = now + timedelta(minutes=n)
     end_time = new_now.strftime("%I:%M %p")
     factor_load()
     print "You should be done by about %s." % end_time
@@ -244,7 +245,7 @@ def overhour_filter(n):
     hour_v = n / 60
     if min_v == 0:
       min_v = min_v + 1
-    new_now = now + timedelta(minutes = min_v, hours = hour_v)
+    new_now = now + timedelta(minutes=min_v, hours=hour_v)
     end_time = new_now.strftime("%I:%M %p")
     factor_load()
     print "You should be done by about %s." % end_time
@@ -256,6 +257,7 @@ def overhour_filter(n):
 def is_positive(n):
   if n < 0:
     print "You have enough! Don't slice anymore."
+    byebye = raw_input("Press enter to exit.")
     exit()
 
 
@@ -264,6 +266,7 @@ def is_positive(n):
 def keep_running():
   run = raw_input("Would you like to continue? Enter y or n: ")
   if run == 'y' or run == 'Y':
+    reset_stockvalue()
     slicing_helper()
   elif run == 'n' or run == 'N':
     byebye = raw_input("Thanks for using my program! \nHit Enter to close.")
@@ -271,7 +274,19 @@ def keep_running():
   else:
     print "Type y or n."
     keep_running()
- 
+
+
+def reset_stockvalue():
+  global fullturkey
+  fullturkey = 18
+  global fullham
+  fullham = 21
+  global fullvito
+  fullvito = 11
+  global fullbeef
+  fullbeef = 12
+  global fullcheese
+  fullcheese = 18
 
 
 def profile_loader(name):
@@ -292,12 +307,14 @@ def profile_loader(name):
   print "Beef?"
   bf = raw_input("> ")
   sliceload.append(bf)
-  
+
   with sqlite3.connect("jj_slicing.db") as connection:
     c = connection.cursor()
-    
+
     c.execute("INSERT INTO Profiles VALUES(?, ?, ?, ?, ?, ?)", sliceload)
-  
+  print "Profile complete! Successfully updated database."
+
+
 def slice_dump(person):
   prof = []
   prof.append(person)
@@ -307,26 +324,31 @@ def slice_dump(person):
     slicedump = c.fetchall()
     for s in slicedump:
       slicetime.append(s)
-  
+
+
 # The main function that makes it run infinitely unless told otherwise.
+
+
 def slicing_helper():
   while True:
     q1 = raw_input("What are you slicing? ")
     q2 = raw_input("How many packs of %s do you have? " % q1)
-    
+
     if q1 in terms:
       slice_calc(q1, q2)
     else:
       print "Sorry that food item does not exist! Try again."
 
 # We like to you by name, i guess.
+
+
 q3 = raw_input("Type in your name: ")
 with sqlite3.connect("jj_slicing.db") as connection:
   c = connection.cursor()
-  
+
   c.execute("SELECT * FROM Profiles")
   rows = c.fetchall()
-  
+
   for r in rows:
      profiles.append(r[0])
 
@@ -338,6 +360,7 @@ else:
   response = raw_input("> ")
   if response == "y" or response == "Y":
     profile_loader(q3)
+    slice_dump(q3)
   else:
     slicing_helper()
 # That's it. k bye.
