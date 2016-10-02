@@ -4,6 +4,7 @@ from datetime import date, datetime, timedelta
 from random import randint
 from sys import exit
 import sqlite3
+import facebook
 
 # NOTE: MAKE SURE TO RUN sqlite3_db_profiles.py BEFORE RUNNING THIS CODE
 # OTHERWISE THE PROFILE FEATURE WILL NOT WORK ! ! !
@@ -107,7 +108,7 @@ def slice_calc(food, amt):
 
 
 def time_to_slice(num_packs, food):
-  if food == 'turkey' and q3 == "Drew":
+  if food == 'turkey' and q3 in profiles:
     num_packs *= slicetime[0][0]
     print "It would take about %d minutes to slice %s." % (num_packs, food)
     adj_packs = adjusted_time(num_packs)  # Shit happens. That's why we need an ADJUSTED time.
@@ -115,7 +116,7 @@ def time_to_slice(num_packs, food):
     overhour_filter(int_packs)  # I'll explain this later.
     is_a_lot(int_packs)  # This too.
     keep_running()
-  if food == 'turkey':
+  elif food == 'turkey':
     num_packs *= 6
     print "It would take about %d minutes to slice %s." % (num_packs, food)
     adj_packs = adjusted_time(num_packs)
@@ -123,16 +124,24 @@ def time_to_slice(num_packs, food):
     overhour_filter(int_packs)
     is_a_lot(int_packs)
     keep_running()
-  elif food == 'ham':
-    num_packs *= 12
-    print "It would take about %d minutes to slice %s." % (num_packs, food)
+  elif food == 'ham' and q3 in profiles:
+    num_packs *= slicetime[0][1]
+    print "It would take about %r minutes to slice %s." % (num_packs, food)
     adj_packs = adjusted_time(num_packs)
     int_packs = int(adj_packs)
     overhour_filter(int_packs)
     is_a_lot(int_packs)
     keep_running()
-  elif food == 'cheese' and q3 == "Drew":
-    num_packs *= 18
+  elif food == 'ham':
+    num_packs *= 12
+    print "It would take about %r minutes to slice %s." % (num_packs, food)
+    adj_packs = adjusted_time(num_packs)
+    int_packs = int(adj_packs)
+    overhour_filter(int_packs)
+    is_a_lot(int_packs)
+    keep_running()
+  elif food == 'cheese' and q3 in profiles:
+    num_packs *= slicetime[0][2]
     print "It would take about %d minutes to slice %s." % (num_packs, food)
     adj_packs = adjusted_time(num_packs)
     int_packs = int(adj_packs)
@@ -147,8 +156,24 @@ def time_to_slice(num_packs, food):
     overhour_filter(int_packs)
     is_a_lot(int_packs)
     keep_running()
+  elif food == 'vito' and q3 in profiles:
+    num_packs *= slicetime[0][3]
+    print "It would take about %d minutes to slice %s." % (num_packs, food)
+    adj_packs = adjusted_time(num_packs)
+    int_packs = int(adj_packs)
+    overhour_filter(int_packs)
+    is_a_lot(int_packs)
+    keep_running()
   elif food == 'vito':
     num_packs *= 15
+    print "It would take about %d minutes to slice %s." % (num_packs, food)
+    adj_packs = adjusted_time(num_packs)
+    int_packs = int(adj_packs)
+    overhour_filter(int_packs)
+    is_a_lot(int_packs)
+    keep_running()
+  elif food == 'beef' and q3 in profiles:
+    num_packs *= slicetime[0][4]
     print "It would take about %d minutes to slice %s." % (num_packs, food)
     adj_packs = adjusted_time(num_packs)
     int_packs = int(adj_packs)
@@ -269,8 +294,15 @@ def keep_running():
     reset_stockvalue()
     slicing_helper()
   elif run == 'n' or run == 'N':
-    byebye = raw_input("Thanks for using my program! \nHit Enter to close.")
-    exit()
+    print "Would you like to post a status of your hard work on the Jimmy John's Facebook page?"
+    fbp = raw_input("> ")
+    if fbp == "y":
+      fb_post_update()
+      byebye = raw_input("Thanks for using my program! \nHit Enter to exit.")
+      exit()
+    else:
+      byebye = raw_input("Thanks for using my program! \nHit Enter to exit.")
+      exit()
   else:
     print "Type y or n."
     keep_running()
@@ -288,11 +320,24 @@ def reset_stockvalue():
   global fullcheese
   fullcheese = 18
 
-
+def fb_post_update():
+  fdsliced = raw_input("What food did you slice today? ")
+  cms = raw_input("Add a custom message to your status! ")
+  justfin = "Our rock star, %s, just finished slicing " % q3
+  status = justfin + fdsliced + "! " + cms
+  
+  my_token = "EAAN7unK1SmkBAKwXN1A9qfxU76AoVuqTURSDEWmfsnmcH3mX0JlRlOku4loy5IHpHZBtCHezaiDyQ5Pm6T2mAZB0jbuDMNdthZAFujg1gxPvMVq8LtgZAm4V7vAfKladj99gA9sS9Np37iIzWJUkhPFgJAt19HVoISqFZBaYRUwZDZD"
+  my_id = "1664030033909655"
+  graph = facebook.GraphAPI(access_token=my_token)
+  graph.put_object(parent_object=my_id, connection_name='feed', message=status)
+  
+  print "Status posted! You can visit the page at https://www.facebook.com/jjsirving/"
+  
 def profile_loader(name):
   sliceload.append(name)
   print "On average, how many minutes does it take to slice 1 turkey?"
-  print "If you don't know, please type 'null'."
+  print "If you don't know, guess."
+  print "Decimals are accepted."
   tur = raw_input("> ")
   sliceload.append(tur)
   print "Ham?"
