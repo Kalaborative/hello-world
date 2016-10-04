@@ -3,6 +3,11 @@
 from datetime import date, datetime, timedelta
 from random import randint
 from sys import exit
+import sqlite3
+import facebook
+
+# NOTE: MAKE SURE TO RUN sqlite3_db_profiles.py BEFORE RUNNING THIS CODE
+# OTHERWISE THE PROFILE FEATURE WILL NOT WORK ! ! !
 
 
 # define our global variables
@@ -15,10 +20,17 @@ fullbeef = 12
 fullcheese = 18
 
 # A list of terms the calculator will accept
-terms = ['vito', 'cheese', 'beef', 'turkey', 'ham']
+# This also describes the specific order in which to insert the values.
+terms = ['turkey', 'ham', 'cheese', 'vito', 'beef']
+
+profiles = []
+sliceload = []
+slicetime = []
 
 # Depending on the weekday, different slicing levels are observed.
 # This is why this function is necessary.
+
+
 def day_of_week(food):
   day = date.today().strftime("%A")
   if (day == 'Friday' or day == 'Saturday') and food == 'turkey':
@@ -57,8 +69,8 @@ def day_of_week(food):
 def slice_calc(food, amt):
   if food == "ham":
     day_of_week(food)
-    leftover = fullham - float(amt) # Why float? Because we're rounding numbers.
-    result = int(round(leftover / 3)) # Rounding an integer would be kinda pointless.
+    leftover = fullham - float(amt)  # Why float? Because we're rounding numbers.
+    result = int(round(leftover / 3))  # Rounding an integer would be kinda pointless.
     is_positive(result)               # Wouldn't it?
     print "You need to slice %d hams." % result
     time_to_slice(result, food)
@@ -93,34 +105,43 @@ def slice_calc(food, amt):
 
 # This function approximates the time it takes to slice a meat.
 # Note that this means NO DISTRACTIONS WHATSOEVER!
+
+
 def time_to_slice(num_packs, food):
-  #num_packs = int(num_packs)
-  if food == 'turkey':
+  if food == 'turkey' and q3 in profiles:
+    num_packs *= slicetime[0][0]
+    print "It would take about %d minutes to slice %s." % (num_packs, food)
+    adj_packs = adjusted_time(num_packs)  # Shit happens. That's why we need an ADJUSTED time.
+    int_packs = int(adj_packs)
+    overhour_filter(int_packs)  # I'll explain this later.
+    is_a_lot(int_packs)  # This too.
+    keep_running()
+  elif food == 'turkey':
     num_packs *= 6
     print "It would take about %d minutes to slice %s." % (num_packs, food)
-    adj_packs = adjusted_time(num_packs) # Shit happens. That's why we need an ADJUSTED time.
+    adj_packs = adjusted_time(num_packs)
     int_packs = int(adj_packs)
-    overhour_filter(int_packs) # I'll explain this later.
-    is_a_lot(int_packs) # This too.
+    overhour_filter(int_packs)
+    is_a_lot(int_packs)
+    keep_running()
+  elif food == 'ham' and q3 in profiles:
+    num_packs *= slicetime[0][1]
+    print "It would take about %r minutes to slice %s." % (num_packs, food)
+    adj_packs = adjusted_time(num_packs)
+    int_packs = int(adj_packs)
+    overhour_filter(int_packs)
+    is_a_lot(int_packs)
     keep_running()
   elif food == 'ham':
     num_packs *= 12
-    print "It would take about %d minutes to slice %s." % (num_packs, food)
+    print "It would take about %r minutes to slice %s." % (num_packs, food)
     adj_packs = adjusted_time(num_packs)
     int_packs = int(adj_packs)
     overhour_filter(int_packs)
     is_a_lot(int_packs)
     keep_running()
-  elif food == 'vito':
-    num_packs *= 15
-    print "It would take about %d minutes to slice %s." % (num_packs, food)
-    adj_packs = adjusted_time(num_packs)
-    int_packs = int(adj_packs)
-    overhour_filter(int_packs)
-    is_a_lot(int_packs)
-    keep_running()
-  elif food == 'beef':
-    num_packs *= 16
+  elif food == 'cheese' and q3 in profiles:
+    num_packs *= slicetime[0][2]
     print "It would take about %d minutes to slice %s." % (num_packs, food)
     adj_packs = adjusted_time(num_packs)
     int_packs = int(adj_packs)
@@ -135,7 +156,38 @@ def time_to_slice(num_packs, food):
     overhour_filter(int_packs)
     is_a_lot(int_packs)
     keep_running()
-
+  elif food == 'vito' and q3 in profiles:
+    num_packs *= slicetime[0][3]
+    print "It would take about %d minutes to slice %s." % (num_packs, food)
+    adj_packs = adjusted_time(num_packs)
+    int_packs = int(adj_packs)
+    overhour_filter(int_packs)
+    is_a_lot(int_packs)
+    keep_running()
+  elif food == 'vito':
+    num_packs *= 15
+    print "It would take about %d minutes to slice %s." % (num_packs, food)
+    adj_packs = adjusted_time(num_packs)
+    int_packs = int(adj_packs)
+    overhour_filter(int_packs)
+    is_a_lot(int_packs)
+    keep_running()
+  elif food == 'beef' and q3 in profiles:
+    num_packs *= slicetime[0][4]
+    print "It would take about %d minutes to slice %s." % (num_packs, food)
+    adj_packs = adjusted_time(num_packs)
+    int_packs = int(adj_packs)
+    overhour_filter(int_packs)
+    is_a_lot(int_packs)
+    keep_running()
+  elif food == 'beef':
+    num_packs *= 16
+    print "It would take about %d minutes to slice %s." % (num_packs, food)
+    adj_packs = adjusted_time(num_packs)
+    int_packs = int(adj_packs)
+    overhour_filter(int_packs)
+    is_a_lot(int_packs)
+    keep_running()
 
 
 # So the concept of this is given any duration of time, in minutes,
@@ -158,9 +210,9 @@ def adjusted_time(ntime):
   elif ntime >= 91 and ntime < 120:
     ntime = ntime + randint(26, 44)
     return ntime
-  elif ntime >=120 and ntime <= 150:
+  else:
     ntime = ntime + randint(30, 50)
-
+    return ntime
 
 
 # A completely fake but showoff-y loading simulator.
@@ -188,6 +240,8 @@ def factor_load():
   print factor
 
 # How much is "a lot"? Well wouldn't you like to know!
+
+
 def is_a_lot(n):
   if n < 35:
     print "Lucky for you, %s, there's not a lot you have to do. Whoopee!" % q3
@@ -206,16 +260,17 @@ def is_a_lot(n):
 # Fortunately, that wasn't very hard to figure out.
 def overhour_filter(n):
   now = datetime.now()
-  #n = int(n)
   if n < 59:
-    new_now = now + timedelta(minutes = n)
+    new_now = now + timedelta(minutes=n)
     end_time = new_now.strftime("%I:%M %p")
     factor_load()
     print "You should be done by about %s." % end_time
   elif n >= 59:
     min_v = n % 60
     hour_v = n / 60
-    new_now = now + timedelta(minutes = min_v, hours = hour_v)
+    if min_v == 0:
+      min_v = min_v + 1
+    new_now = now + timedelta(minutes=min_v, hours=hour_v)
     end_time = new_now.strftime("%I:%M %p")
     factor_load()
     print "You should be done by about %s." % end_time
@@ -227,6 +282,7 @@ def overhour_filter(n):
 def is_positive(n):
   if n < 0:
     print "You have enough! Don't slice anymore."
+    byebye = raw_input("Press enter to exit.")
     exit()
 
 
@@ -235,15 +291,89 @@ def is_positive(n):
 def keep_running():
   run = raw_input("Would you like to continue? Enter y or n: ")
   if run == 'y' or run == 'Y':
+    reset_stockvalue()
     slicing_helper()
   elif run == 'n' or run == 'N':
-    byebye = raw_input("Thanks for using my program! \nHit Enter to close.")
-    exit()
+    print "Would you like to post a status of your hard work on the Jimmy John's Facebook page?"
+    fbp = raw_input("> ")
+    if fbp == "y":
+      fb_post_update()
+      byebye = raw_input("Thanks for using my program! \nHit Enter to exit.")
+      exit()
+    else:
+      byebye = raw_input("Thanks for using my program! \nHit Enter to exit.")
+      exit()
   else:
     print "Type y or n."
     keep_running()
 
+
+def reset_stockvalue():
+  global fullturkey
+  fullturkey = 18
+  global fullham
+  fullham = 21
+  global fullvito
+  fullvito = 11
+  global fullbeef
+  fullbeef = 12
+  global fullcheese
+  fullcheese = 18
+
+def fb_post_update():
+  fdsliced = raw_input("What food did you slice today? ")
+  cms = raw_input("Add a custom message to your status! ")
+  justfin = "Our rock star, %s, just finished slicing " % q3
+  status = justfin + fdsliced + "! " + cms
+  
+  my_token = "EAAN7unK1SmkBAKwXN1A9qfxU76AoVuqTURSDEWmfsnmcH3mX0JlRlOku4loy5IHpHZBtCHezaiDyQ5Pm6T2mAZB0jbuDMNdthZAFujg1gxPvMVq8LtgZAm4V7vAfKladj99gA9sS9Np37iIzWJUkhPFgJAt19HVoISqFZBaYRUwZDZD"
+  my_id = "1664030033909655"
+  graph = facebook.GraphAPI(access_token=my_token)
+  graph.put_object(parent_object=my_id, connection_name='feed', message=status)
+  
+  print "Status posted! You can visit the page at https://www.facebook.com/jjsirving/"
+  
+def profile_loader(name):
+  sliceload.append(name)
+  print "On average, how many minutes does it take to slice 1 turkey?"
+  print "If you don't know, guess."
+  print "Decimals are accepted."
+  tur = raw_input("> ")
+  sliceload.append(tur)
+  print "Ham?"
+  ham = raw_input("> ")
+  sliceload.append(ham)
+  print "Cheese?"
+  chz = raw_input("> ")
+  sliceload.append(chz)
+  print "And vito?"
+  vit = raw_input("> ")
+  sliceload.append(vit)
+  print "Beef?"
+  bf = raw_input("> ")
+  sliceload.append(bf)
+
+  with sqlite3.connect("jj_slicing.db") as connection:
+    c = connection.cursor()
+
+    c.execute("INSERT INTO Profiles VALUES(?, ?, ?, ?, ?, ?)", sliceload)
+  print "Profile complete! Successfully updated database."
+
+
+def slice_dump(person):
+  prof = []
+  prof.append(person)
+  with sqlite3.connect("jj_slicing.db") as connection:
+    c = connection.cursor()
+    c.execute("SELECT turk,ham,cheese,vito,beef FROM Profiles WHERE Name=?", prof)
+    slicedump = c.fetchall()
+    for s in slicedump:
+      slicetime.append(s)
+
+
 # The main function that makes it run infinitely unless told otherwise.
+
+
 def slicing_helper():
   while True:
     q1 = raw_input("What are you slicing? ")
@@ -255,6 +385,28 @@ def slicing_helper():
       print "Sorry that food item does not exist! Try again."
 
 # We like to you by name, i guess.
+
+
 q3 = raw_input("Type in your name: ")
+with sqlite3.connect("jj_slicing.db") as connection:
+  c = connection.cursor()
+
+  c.execute("SELECT * FROM Profiles")
+  rows = c.fetchall()
+
+  for r in rows:
+     profiles.append(r[0])
+
+if q3 in profiles:
+  slice_dump(q3)
+  print "%s has a profile! Profile loaded." % q3
+else:
+  print "You don't have a profile. Would you like to make one now? Y/N"
+  response = raw_input("> ")
+  if response == "y" or response == "Y":
+    profile_loader(q3)
+    slice_dump(q3)
+  else:
+    slicing_helper()
 # That's it. k bye.
 slicing_helper()
