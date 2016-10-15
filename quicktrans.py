@@ -73,7 +73,7 @@ def mainmenu():
 def foreigntoEng():
 	translate_client = translate.Client(api_key)
 	print ("\n" * 100)
-	print "Enter your foreign phrase below: "
+	print "Enter your foreign phrase below! "
 	forphr = raw_input("> ")
 	translation = translate_client.translate(forphr)
 	for country, code in langcodes.iteritems():
@@ -81,8 +81,12 @@ def foreigntoEng():
 			detcountry = country
 	print "Working..."
 	sleep(4)
-	print "It looks like you said '%s' in %s." % (translation['translatedText'], detcountry.capitalize())
+	try:
+		print "It looks like you said '%s' in %s." % (translation['translatedText'], detcountry.capitalize())
+	except UnboundLocalError:
+		print "Your text could not be translated. Please try again."
 	rerun()
+
 
 
 def transtolang():
