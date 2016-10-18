@@ -278,7 +278,7 @@ def overhour_filter(n):
 
 # This basically prevents the program from saying something like..
 # "you need to slice -4 turkeys."
-# In other words, it's already full dipshit.
+# In other words, it's already full.
 def is_positive(n):
   if n < 0:
     print "You have enough! Don't slice anymore."
@@ -332,7 +332,8 @@ def fb_post_update():
   graph.put_object(parent_object=my_id, connection_name='feed', message=status)
   
   print "Status posted! You can visit the page at https://www.facebook.com/jjsirving/"
-  
+
+
 def profile_loader(name):
   sliceload.append(name)
   print "On average, how many minutes does it take to slice 1 turkey?"
